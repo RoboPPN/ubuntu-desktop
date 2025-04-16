@@ -4,6 +4,7 @@
 """
 摄像头显示脚本
 同时显示外接USB摄像头的彩色图像、RealSense D405的深度图像和彩色图像
+包含帧率(FPS)显示功能
 """
 
 import cv2
@@ -81,6 +82,17 @@ def main():
     # 显示操作提示
     print("按ESC键或空格键退出程序")
     
+    # 初始化FPS计算变量
+    usb_fps_start_time = time.time()
+    rs_color_fps_start_time = time.time()
+    rs_depth_fps_start_time = time.time()
+    usb_frame_count = 0
+    rs_color_frame_count = 0
+    rs_depth_frame_count = 0
+    usb_fps = 0
+    rs_color_fps = 0
+    rs_depth_fps = 0
+    
     try:
         while True:
             # 获取RealSense帧
@@ -101,6 +113,46 @@ def main():
             if not ret:
                 print("未能获取USB摄像头帧，重试中...")
                 continue
+            
+            # 计算USB摄像头FPS
+            usb_frame_count += 1
+            if (time.time() - usb_fps_start_time) > 1.0:  # 每秒更新一次FPS
+                usb_fps = usb_frame_count / (time.time() - usb_fps_start_time)
+                usb_frame_count = 0
+                usb_fps_start_time = time.time()
+            
+            # 计算RealSense彩色摄像头FPS
+            rs_color_frame_count += 1
+            if (time.time() - rs_color_fps_start_time) > 1.0:  # 每秒更新一次FPS
+                rs_color_fps = rs_color_frame_count / (time.time() - rs_color_fps_start_time)
+                rs_color_frame_count = 0
+                rs_color_fps_start_time = time.time()
+            
+            # 计算RealSense深度摄像头FPS
+            rs_depth_frame_count += 1
+            if (time.time() - rs_depth_fps_start_time) > 1.0:  # 每秒更新一次FPS
+                rs_depth_fps = rs_depth_frame_count / (time.time() - rs_depth_fps_start_time)
+                rs_depth_frame_count = 0
+                rs_depth_fps_start_time = time.time()
+            
+            # 在图像上显示FPS
+            # 设置文本参数
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.7
+            font_color = (0, 255, 0)  # 绿色
+            font_thickness = 2
+            
+            # 在USB摄像头图像上显示FPS
+            fps_text = f"FPS: {usb_fps:.1f}"
+            cv2.putText(usb_color_image, fps_text, (10, 30), font, font_scale, font_color, font_thickness)
+            
+            # 在RealSense彩色图像上显示FPS
+            fps_text = f"FPS: {rs_color_fps:.1f}"
+            cv2.putText(rs_color_image, fps_text, (10, 30), font, font_scale, font_color, font_thickness)
+            
+            # 在RealSense深度图像上显示FPS
+            fps_text = f"FPS: {rs_depth_fps:.1f}"
+            cv2.putText(rs_depth_image, fps_text, (10, 30), font, font_scale, font_color, font_thickness)
             
             # 显示图像
             cv2.imshow('USB摄像头 (彩色)', usb_color_image)
