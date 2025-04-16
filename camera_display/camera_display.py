@@ -5,6 +5,7 @@
 摄像头显示脚本
 同时显示外接USB摄像头的彩色图像、RealSense D405的深度图像和彩色图像
 包含帧率(FPS)显示功能
+窗口整齐排列功能
 """
 
 import cv2
@@ -76,11 +77,23 @@ def main():
     cv2.namedWindow('RealSense D405 (彩色)', cv2.WINDOW_AUTOSIZE)
     cv2.namedWindow('RealSense D405 (深度)', cv2.WINDOW_AUTOSIZE)
     
+    # 设置窗口位置，使其整齐排列
+    # 假设每个窗口宽度为640，高度为480
+    window_width = 640
+    window_height = 480
+    margin = 30  # 窗口之间的间距
+    
+    # 水平排列三个窗口
+    cv2.moveWindow('USB摄像头 (彩色)', 100, 100)  # 第一个窗口位于左上角
+    cv2.moveWindow('RealSense D405 (彩色)', window_width + margin + 100, 100)  # 第二个窗口位于第一个窗口右侧
+    cv2.moveWindow('RealSense D405 (深度)', ((window_width + margin) * 2)+100, 130)  # 第三个窗口位于第二个窗口右侧
+    
     # 创建深度图像的颜色映射对象
     colorizer = rs.colorizer()
     
     # 显示操作提示
     print("按ESC键或空格键退出程序")
+    print("窗口已整齐排列在屏幕上")
     
     # 初始化FPS计算变量
     usb_fps_start_time = time.time()
