@@ -141,3 +141,215 @@ Exec=/usr/bin/python3 /home/ppn/camera_test/camera_display.py
 
 完成后，你就可以像普通应用一样通过点击图标启动 RealSense Viewer 了！
 
+## 附录-系统自带图标列表
+
+以下是系统自带的常用图标，可以在.desktop文件的`Icon=`字段中直接使用。
+
+### 应用程序图标
+
+|      图标名称      |        描述         |
+| :----------------: | :-----------------: |
+|   google-chrome    | Google Chrome浏览器 |
+|        gvim        |   GVim文本编辑器    |
+|       xterm        |     终端模拟器      |
+|     mini.xterm     |      迷你终端       |
+| com.gexperts.Tilix |   Tilix终端模拟器   |
+|      openbox       |  Openbox窗口管理器  |
+|      computer      |     计算机/系统     |
+
+### 设备和硬件图标
+
+|       图标名称        |      描述      |
+| :-------------------: | :------------: |
+|     camera-photo      |  相机/摄像头   |
+|      audio-card       | 声卡/音频设备  |
+|   audio-headphones    |      耳机      |
+|    audio-speakers     |     扬声器     |
+|        battery        |      电池      |
+|       computer        |     计算机     |
+|    drive-harddisk     |   硬盘驱动器   |
+|     drive-optical     |   光盘驱动器   |
+| drive-removable-media | 可移动存储设备 |
+|    input-keyboard     |      键盘      |
+|      input-mouse      |      鼠标      |
+|     input-tablet      |     数位板     |
+|     media-optical     |      光盘      |
+|      media-flash      |    闪存设备    |
+|     network-wired     |    有线网络    |
+|   network-wireless    |    无线网络    |
+|         phone         |      电话      |
+|        printer        |     打印机     |
+|        scanner        |     扫描仪     |
+|     video-display     |     显示器     |
+
+### 文件和文件夹图标
+
+|       图标名称        |     描述     |
+| :-------------------: | :----------: |
+|        folder         |    文件夹    |
+|   folder-documents    |  文档文件夹  |
+|    folder-download    |  下载文件夹  |
+|     folder-music      |  音乐文件夹  |
+|    folder-pictures    |  图片文件夹  |
+|     folder-videos     |  视频文件夹  |
+|     user-desktop      |  桌面文件夹  |
+|       user-home       |    主目录    |
+|      user-trash       |    垃圾桶    |
+|    text-x-generic     | 通用文本文件 |
+|    image-x-generic    | 通用图像文件 |
+|    video-x-generic    | 通用视频文件 |
+|    audio-x-generic    | 通用音频文件 |
+|   package-x-generic   |  通用包文件  |
+|   x-office-document   |   办公文档   |
+| x-office-spreadsheet  |   电子表格   |
+| x-office-presentation |   演示文稿   |
+
+### 状态和通知图标
+
+|         图标名称          |     描述     |
+| :-----------------------: | :----------: |
+|    dialog-information     |  信息对话框  |
+|      dialog-warning       |  警告对话框  |
+|       dialog-error        |  错误对话框  |
+|      dialog-question      |  问题对话框  |
+|      dialog-password      |  密码对话框  |
+|       network-error       |   网络错误   |
+|       network-idle        |   网络空闲   |
+|      network-offline      |   网络离线   |
+|     network-transmit      |   网络发送   |
+|      network-receive      |   网络接收   |
+| network-transmit-receive  | 网络发送接收 |
+|       security-high       |   高安全性   |
+|      security-medium      |  中等安全性  |
+|       security-low        |   低安全性   |
+| software-update-available | 软件更新可用 |
+|  software-update-urgent   | 紧急软件更新 |
+
+### 网络和连接图标
+
+|             图标名称              |     描述     |
+| :-------------------------------: | :----------: |
+|           network-wired           |   有线网络   |
+|         network-wireless          |   无线网络   |
+|            network-vpn            |   VPN连接    |
+|        network-cellular-2g        |  2G蜂窝网络  |
+|        network-cellular-3g        |  3G蜂窝网络  |
+|        network-cellular-4g        |  4G蜂窝网络  |
+|        network-cellular-5g        |  5G蜂窝网络  |
+| network-wireless-signal-excellent | 无线信号极好 |
+|   network-wireless-signal-good    | 无线信号良好 |
+|    network-wireless-signal-ok     | 无线信号一般 |
+|   network-wireless-signal-weak    |  无线信号弱  |
+|   network-wireless-signal-none    |  无无线信号  |
+
+### 天气图标
+
+|         图标名称          |     描述     |
+| :-----------------------: | :----------: |
+|       weather-clear       |     晴天     |
+|    weather-clear-night    |   晴朗夜晚   |
+|    weather-few-clouds     |     少云     |
+| weather-few-clouds-night  |   夜间少云   |
+|        weather-fog        |      雾      |
+|     weather-overcast      |     阴天     |
+|   weather-severe-alert    | 恶劣天气警报 |
+|      weather-showers      |     阵雨     |
+| weather-showers-scattered |   零星阵雨   |
+|       weather-snow        |      雪      |
+|       weather-storm       |    暴风雨    |
+|       weather-windy       |     大风     |
+
+### 媒体控制图标
+
+|        图标名称        |     描述     |
+| :--------------------: | :----------: |
+|  media-playback-start  |     播放     |
+|  media-playback-pause  |     暂停     |
+|  media-playback-stop   |     停止     |
+|   media-skip-forward   |     快进     |
+|  media-skip-backward   |     快退     |
+|      media-record      |     录制     |
+|      media-eject       |     弹出     |
+| media-playlist-repeat  | 重复播放列表 |
+| media-playlist-shuffle |   随机播放   |
+|   audio-volume-high    |    高音量    |
+|  audio-volume-medium   |   中等音量   |
+|    audio-volume-low    |    低音量    |
+|   audio-volume-muted   |     静音     |
+
+### 系统操作图标
+
+|             图标名称              |       描述       |
+| :-------------------------------: | :--------------: |
+|            system-run             |       运行       |
+|           system-search           |       搜索       |
+|            system-help            |       帮助       |
+|          system-log-out           |       注销       |
+|          system-shutdown          |       关机       |
+|           system-reboot           |       重启       |
+|        system-lock-screen         |       锁屏       |
+|           system-users            |       用户       |
+|      system-software-install      |     软件安装     |
+|      system-software-update       |     软件更新     |
+|        preferences-system         |   系统偏好设置   |
+|        preferences-desktop        |   桌面偏好设置   |
+|   preferences-desktop-keyboard    |   键盘偏好设置   |
+|    preferences-desktop-display    |   显示偏好设置   |
+|     preferences-desktop-theme     |   主题偏好设置   |
+| preferences-desktop-accessibility | 辅助功能偏好设置 |
+
+### 编辑操作图标
+
+|         图标名称          |   描述   |
+| :-----------------------: | :------: |
+|         edit-cut          |   剪切   |
+|         edit-copy         |   复制   |
+|        edit-paste         |   粘贴   |
+|        edit-delete        |   删除   |
+|        edit-clear         |   清除   |
+|         edit-find         |   查找   |
+|     edit-find-replace     | 查找替换 |
+|         edit-redo         |   重做   |
+|         edit-undo         |   撤销   |
+|     format-text-bold      |   粗体   |
+|    format-text-italic     |   斜体   |
+|   format-text-underline   |  下划线  |
+| format-text-strikethrough |  删除线  |
+|    format-justify-left    |  左对齐  |
+|   format-justify-center   | 居中对齐 |
+|   format-justify-right    |  右对齐  |
+|    format-justify-fill    | 两端对齐 |
+
+### 窗口控制图标
+
+|       图标名称       |    描述    |
+| :------------------: | :--------: |
+|     window-close     |  关闭窗口  |
+|   window-maximize    | 最大化窗口 |
+|   window-minimize    | 最小化窗口 |
+|    window-restore    |  还原窗口  |
+|      window-new      |   新窗口   |
+|   view-fullscreen    |  全屏查看  |
+|     view-restore     |  还原视图  |
+|     view-refresh     |  刷新视图  |
+| view-sort-ascending  |  升序排序  |
+| view-sort-descending |  降序排序  |
+
+### 用户状态图标
+
+|    图标名称    |   描述   |
+| :------------: | :------: |
+| user-available | 用户在线 |
+|   user-away    | 用户离开 |
+|   user-busy    | 用户忙碌 |
+|   user-idle    | 用户空闲 |
+| user-invisible | 用户隐身 |
+|  user-offline  | 用户离线 |
+
+### 注意事项
+
+1. 这些图标名称可以直接在.desktop文件的`Icon=`字段中使用，无需指定完整路径。
+2. 系统会根据当前主题自动选择合适的图标。
+3. 如果某个图标名称在当前主题中不可用，系统会尝试使用备用图标。
+4. 某些图标可能在不同的Linux发行版中有所不同。
+5. 除了上述图标外，您还可以使用完整路径指定自定义图标，例如：`Icon=/path/to/your/icon.png`。
