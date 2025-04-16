@@ -78,6 +78,9 @@ def main():
     # 创建深度图像的颜色映射对象
     colorizer = rs.colorizer()
     
+    # 显示操作提示
+    print("按ESC键或空格键退出程序")
+    
     try:
         while True:
             # 获取RealSense帧
@@ -104,9 +107,10 @@ def main():
             cv2.imshow('RealSense D405 (彩色)', rs_color_image)
             cv2.imshow('RealSense D405 (深度)', rs_depth_image)
             
-            # 按ESC键退出
+            # 检测按键 - 按ESC键或空格键退出
             key = cv2.waitKey(1)
-            if key == 27:  # ESC键
+            if key == 27 or key == 32:  # ESC键(27)或空格键(32)
+                print("检测到退出按键，正在关闭程序...")
                 break
     
     except Exception as e:
@@ -122,4 +126,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
