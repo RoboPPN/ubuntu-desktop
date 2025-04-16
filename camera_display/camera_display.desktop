@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=多摄像头显示
+Comment=显示USB摄像头和RealSense D405摄像头图像
+Exec=/usr/bin/python3 /home/<USER NAME>/camera_display.py
+Icon=camera-photo
+Terminal=false
+Categories=Utility;Development;

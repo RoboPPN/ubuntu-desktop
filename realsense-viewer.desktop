@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=RealSense Viewer
+Comment=realsense-viewer
+Exec=/usr/local/bin/realsense-viewer
+Icon=camera-photo
+Terminal=false
+Categories=Utility;Development;

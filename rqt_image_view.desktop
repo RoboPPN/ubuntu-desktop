@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=rqt_image_view
+Comment=rqt_image_view
+Exec=bash -c "source /opt/ros/noetic/setup.bash && rqt_image_view"
+Icon=image-viewer
+Terminal=false
+Categories=Utility;Development;
