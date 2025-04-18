@@ -5,7 +5,7 @@
 Qt摄像头显示程序
 同时显示外接USB摄像头的彩色图像、RealSense D405的深度图像和彩色图像
 包含帧率(FPS)显示功能
-包含摄像头检测按钮功能
+包含摄像头打开/关闭功能，支持热拔插
 包含gripper夹爪开合测试功能
 包含Sense夹爪开合数据显示功能
 """
@@ -18,11 +18,11 @@ import time
 import os
 import json
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QFont
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel, 
                             QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout,
                             QMessageBox, QFrame, QSlider, QComboBox, QGroupBox,
-                            QLCDNumber, QProgressBar)
+                            QLineEdit)
 from gripper_control import GripperController, list_serial_ports
 
 class CameraDisplayApp(QMainWindow):
@@ -166,7 +166,7 @@ class CameraDisplayApp(QMainWindow):
         self.enable_button.setEnabled(False)  # 初始禁用，直到连接成功
         
         # 夹爪位置控制区域
-        position_label = QLabel("夹爪开合角度 (rad):")
+        position_label = QLabel("夹爪位置 (0.0 - 1.68):")
         self.position_slider = QSlider(Qt.Horizontal)
         self.position_slider.setRange(0, 168)  # 0.0 到 1.68，乘以100
         self.position_slider.setValue(0)
@@ -175,7 +175,30 @@ class CameraDisplayApp(QMainWindow):
         self.position_slider.valueChanged.connect(self.update_gripper_position)
         self.position_slider.setEnabled(False)  # 初始禁用，直到使能成功
         
+        # 增大滑动条尺寸
+        self.position_slider.setMinimumHeight(40)
+        self.position_slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                height: 10px;
+                margin: 0px;
+                border-radius: 5px;
+                background: #B0B0B0;
+            }
+            QSlider::handle:horizontal {
+                background: #808080;
+                border: 1px solid #5c5c5c;
+                width: 30px;
+                height: 30px;
+                margin: -10px 0;
+                border-radius: 15px;
+            }
+            QSlider::handle:horizontal:hover {
+                background: #606060;
+            }
+        """)
+        
         self.position_value_label = QLabel("0.00")
+        self.position_value_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         
         # 添加控件到夹爪控制布局
         gripper_layout.addWidget(port_label, 0, 0)
@@ -188,7 +211,7 @@ class CameraDisplayApp(QMainWindow):
         gripper_layout.addWidget(self.position_value_label, 2, 3)
         
         # 创建夹爪数据显示区域
-        sense_group = QGroupBox("Sense夹爪开合数据显示")
+        sense_group = QGroupBox("Sense夹爪开合数据")
         sense_group.setStyleSheet("QGroupBox { font-weight: bold; font-size: 14px; }")
         sense_layout = QGridLayout(sense_group)
         
@@ -201,20 +224,22 @@ class CameraDisplayApp(QMainWindow):
         self.sense_connect_button = QPushButton("连接")
         self.sense_connect_button.clicked.connect(self.connect_sense_gripper)
         
-        # 夹爪角度显示区域
-        angle_label = QLabel("夹爪开合角度 (rad):")
-        self.angle_lcd = QLCDNumber()
-        self.angle_lcd.setDigitCount(6)
-        self.angle_lcd.setSegmentStyle(QLCDNumber.Flat)
-        self.angle_lcd.setStyleSheet("background-color: black; color: green;")
-        self.angle_lcd.display("0.0000")
-        
-        # 夹爪位置进度条
-        self.angle_progress = QProgressBar()
-        self.angle_progress.setRange(0, 168)  # 0.0 到 1.68，乘以100
-        self.angle_progress.setValue(0)
-        self.angle_progress.setFormat("%v")
-        self.angle_progress.setAlignment(Qt.AlignCenter)
+        # 夹爪角度显示区域 - 使用简单的白色数字显示
+        angle_label = QLabel("夹爪角度 (rad):")
+        self.angle_display = QLineEdit("0.0000")
+        self.angle_display.setReadOnly(True)
+        self.angle_display.setAlignment(Qt.AlignCenter)
+        self.angle_display.setFont(QFont("Arial", 16))
+        self.angle_display.setStyleSheet("""
+            QLineEdit {
+                background-color: white;
+                color: black;
+                border: 1px solid #A0A0A0;
+                border-radius: 5px;
+                padding: 5px;
+                min-height: 30px;
+            }
+        """)
         
         # 数据接收状态
         self.data_status_label = QLabel("数据状态: 未连接")
@@ -226,18 +251,25 @@ class CameraDisplayApp(QMainWindow):
         sense_layout.addWidget(self.sense_refresh_button, 0, 2)
         sense_layout.addWidget(self.sense_connect_button, 0, 3)
         sense_layout.addWidget(angle_label, 1, 0)
-        sense_layout.addWidget(self.angle_lcd, 1, 1, 1, 3)
-        sense_layout.addWidget(self.angle_progress, 2, 0, 1, 3)
-        sense_layout.addWidget(self.data_status_label, 2, 3)
+        sense_layout.addWidget(self.angle_display, 1, 1, 1, 3)
+        sense_layout.addWidget(self.data_status_label, 2, 0, 1, 4)
         
-        # 创建摄像头检测按钮区域
+        # 创建摄像头控制按钮区域
         button_layout = QHBoxLayout()
-        self.detect_button = QPushButton("检测摄像头")
-        self.detect_button.setFixedHeight(40)
-        self.detect_button.setStyleSheet("font-weight: bold; font-size: 14px;")
-        self.detect_button.clicked.connect(self.detect_cameras)
+        self.open_camera_button = QPushButton("打开摄像头")
+        self.open_camera_button.setFixedHeight(40)
+        self.open_camera_button.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.open_camera_button.clicked.connect(self.open_cameras)
+        
+        self.close_camera_button = QPushButton("关闭摄像头")
+        self.close_camera_button.setFixedHeight(40)
+        self.close_camera_button.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.close_camera_button.clicked.connect(self.close_cameras)
+        
         button_layout.addStretch(1)
-        button_layout.addWidget(self.detect_button)
+        button_layout.addWidget(self.open_camera_button)
+        button_layout.addSpacing(20)  # 添加间距
+        button_layout.addWidget(self.close_camera_button)
         button_layout.addStretch(1)
         
         # 添加所有区域到主布局
@@ -326,8 +358,7 @@ class CameraDisplayApp(QMainWindow):
             self.sense_data_receiving = False
             self.data_status_label.setText("数据状态: 未连接")
             self.data_status_label.setStyleSheet("color: red;")
-            self.angle_lcd.display("0.0000")
-            self.angle_progress.setValue(0)
+            self.angle_display.setText("0.0000")
         else:
             # 连接
             port = self.sense_port_combo.currentText()
@@ -371,11 +402,7 @@ class CameraDisplayApp(QMainWindow):
             self.data_status_label.setStyleSheet("color: green;")
         
         # 更新显示
-        self.angle_lcd.display(f"{angle:.4f}")
-        
-        # 更新进度条（将角度值映射到0-168范围）
-        progress_value = min(168, int(angle * 100))
-        self.angle_progress.setValue(progress_value)
+        self.angle_display.setText(f"{angle:.4f}")
     
     def toggle_gripper_enable(self, checked):
         """切换夹爪使能状态"""
@@ -443,31 +470,10 @@ class CameraDisplayApp(QMainWindow):
         pixmap = QPixmap.fromImage(qt_image)
         label.setPixmap(pixmap)
     
-    def detect_cameras(self):
-        """检测摄像头"""
-        # 释放之前的资源
-        if self.usb_cam is not None:
-            self.usb_cam.release()
-            self.usb_cam = None
-        
-        if self.rs_pipeline is not None:
-            self.rs_pipeline.stop()
-            self.rs_pipeline = None
-        
-        self.rs_depth_frame_available = False
-        self.rs_color_frame_available = False
-        self.usb_cam_available = False
-        
-        # 重置FPS计算变量
-        self.usb_fps_start_time = time.time()
-        self.rs_color_fps_start_time = time.time()
-        self.rs_depth_fps_start_time = time.time()
-        self.usb_frame_count = 0
-        self.rs_color_frame_count = 0
-        self.rs_depth_frame_count = 0
-        self.usb_fps = 0
-        self.rs_color_fps = 0
-        self.rs_depth_fps = 0
+    def open_cameras(self):
+        """打开摄像头"""
+        # 先关闭现有摄像头
+        self.close_cameras()
         
         # 显示占位图像
         self.display_image(self.usb_label, self.usb_placeholder)
@@ -546,6 +552,40 @@ class CameraDisplayApp(QMainWindow):
         # 如果所有摄像头都不可用，则提示用户
         if not self.rs_depth_frame_available and not self.rs_color_frame_available and not self.usb_cam_available:
             QMessageBox.warning(self, "摄像头检测", "所有摄像头均不可用，将显示占位图像")
+        else:
+            QMessageBox.information(self, "摄像头打开", "摄像头已成功打开")
+    
+    def close_cameras(self):
+        """关闭摄像头"""
+        # 释放资源
+        if self.usb_cam is not None:
+            self.usb_cam.release()
+            self.usb_cam = None
+            self.usb_cam_available = False
+        
+        if self.rs_pipeline is not None:
+            self.rs_pipeline.stop()
+            self.rs_pipeline = None
+            self.rs_depth_frame_available = False
+            self.rs_color_frame_available = False
+        
+        # 重置FPS计算变量
+        self.usb_fps_start_time = time.time()
+        self.rs_color_fps_start_time = time.time()
+        self.rs_depth_fps_start_time = time.time()
+        self.usb_frame_count = 0
+        self.rs_color_frame_count = 0
+        self.rs_depth_frame_count = 0
+        self.usb_fps = 0
+        self.rs_color_fps = 0
+        self.rs_depth_fps = 0
+        
+        # 显示占位图像
+        self.display_image(self.usb_label, self.usb_placeholder)
+        self.display_image(self.rs_color_label, self.rs_color_placeholder)
+        self.display_image(self.rs_depth_label, self.rs_depth_placeholder)
+        
+        print("已关闭所有摄像头")
     
     def update_frames(self):
         """更新摄像头画面"""
