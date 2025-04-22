@@ -151,7 +151,7 @@ class CameraDisplayApp(QMainWindow):
         gripper_layout = QGridLayout(gripper_group)
         
         # 串口选择区域
-        port_label = QLabel("串口设备:")
+        port_label = QLabel("Gripper串口选择:")
         self.port_combo = QComboBox()
         self.port_combo.setMinimumWidth(150)
         self.refresh_button = QPushButton("刷新")
@@ -166,7 +166,7 @@ class CameraDisplayApp(QMainWindow):
         self.enable_button.setEnabled(False)  # 初始禁用，直到连接成功
         
         # 夹爪位置控制区域
-        position_label = QLabel("夹爪位置 (0.0 - 1.68):")
+        position_label = QLabel("夹爪位置[0.0 - 1.68]:")
         self.position_slider = QSlider(Qt.Horizontal)
         self.position_slider.setRange(0, 168)  # 0.0 到 1.68，乘以100
         self.position_slider.setValue(0)
@@ -216,7 +216,7 @@ class CameraDisplayApp(QMainWindow):
         sense_layout = QGridLayout(sense_group)
         
         # 串口选择区域
-        sense_port_label = QLabel("串口设备:")
+        sense_port_label = QLabel("Sense串口选择:")
         self.sense_port_combo = QComboBox()
         self.sense_port_combo.setMinimumWidth(150)
         self.sense_refresh_button = QPushButton("刷新")
@@ -359,6 +359,17 @@ class CameraDisplayApp(QMainWindow):
             self.data_status_label.setText("数据状态: 未连接")
             self.data_status_label.setStyleSheet("color: red;")
             self.angle_display.setText("0.0000")
+            # 重置角度显示颜色为默认
+            self.angle_display.setStyleSheet("""
+                QLineEdit {
+                    background-color: white;
+                    color: black;
+                    border: 1px solid #A0A0A0;
+                    border-radius: 5px;
+                    padding: 5px;
+                    min-height: 30px;
+                }
+            """)
         else:
             # 连接
             port = self.sense_port_combo.currentText()
@@ -403,6 +414,34 @@ class CameraDisplayApp(QMainWindow):
         
         # 更新显示
         self.angle_display.setText(f"{angle:.4f}")
+        
+        # 根据角度值设置颜色
+        if angle < 1.68 or angle > 1.75:
+            # 角度超出范围，显示红色
+            self.angle_display.setStyleSheet("""
+                QLineEdit {
+                    background-color: #FFDDDD;
+                    color: red;
+                    border: 1px solid red;
+                    border-radius: 5px;
+                    padding: 5px;
+                    min-height: 30px;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            # 角度在范围内，显示绿色
+            self.angle_display.setStyleSheet("""
+                QLineEdit {
+                    background-color: #DDFFDD;
+                    color: green;
+                    border: 1px solid green;
+                    border-radius: 5px;
+                    padding: 5px;
+                    min-height: 30px;
+                    font-weight: bold;
+                }
+            """)
     
     def toggle_gripper_enable(self, checked):
         """切换夹爪使能状态"""

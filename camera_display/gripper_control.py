@@ -12,6 +12,7 @@ import struct
 import time
 import json
 import threading
+import re
 
 # 定义发送标志
 class SendFlag:
@@ -145,6 +146,33 @@ class GripperController:
             self.stop_thread = False
             self.read_thread = None
     
+    def _find_json(self, data):
+        """查找完整的JSON对象
+        
+        参数:
+            data (str): 包含JSON数据的字符串
+            
+        返回:
+            tuple: (start_index, end_index) 如果找到完整的JSON对象，否则返回(-1, -1)
+        """
+        # 查找JSON开始位置（跳过时间戳等前缀）
+        start_idx = data.find('{')
+        if start_idx == -1:
+            return -1, -1
+        
+        # 查找匹配的结束括号
+        brace_count = 0
+        for i in range(start_idx, len(data)):
+            if data[i] == '{':
+                brace_count += 1
+            elif data[i] == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    return start_idx, i
+        
+        # 未找到匹配的结束括号
+        return -1, -1
+    
     def _read_data_thread(self):
         """数据读取线程"""
         buffer = ""
@@ -156,22 +184,17 @@ class GripperController:
                     data = self.serial.read(self.serial.in_waiting).decode('utf-8', errors='ignore')
                     buffer += data
                     
+                    # 防止缓冲区过大
+                    if len(buffer) > 5000:
+                        buffer = buffer[-5000:]
+                    
                     # 查找完整的JSON对象
-                    while True:
-                        start_idx = buffer.find('{')
-                        if start_idx == -1:
-                            buffer = ""
-                            break
-                        
-                        end_idx = buffer.find('}', start_idx)
-                        if end_idx == -1:
-                            buffer = buffer[start_idx:]
-                            break
-                        
+                    start_idx, end_idx = self._find_json(buffer)
+                    while start_idx != -1 and end_idx != -1:
                         # 提取JSON字符串
                         json_str = buffer[start_idx:end_idx+1]
                         buffer = buffer[end_idx+1:]
-                        
+                                            
                         try:
                             # 解析JSON数据
                             data_obj = json.loads(json_str)
@@ -180,9 +203,20 @@ class GripperController:
                             if 'AS5047' in data_obj:
                                 as5047_data = data_obj['AS5047']
                                 if 'error' not in as5047_data:
-                                    angle = as5047_data.get('rad', 0.0)
-                                    if angle < 0:
+                                    # 优先使用rad字段，如果不存在则尝试使用angle字段
+                                    if 'rad' in as5047_data:
+                                        angle = as5047_data['rad']
+                                    elif 'angle' in as5047_data:
+                                        # 如果提供的是角度值，转换为弧度（假设角度范围是0-180）
+                                        angle = as5047_data['angle'] * 0.01745  # 角度转弧度
+                                    else:
                                         angle = 0.0
+                                    
+                                    # 确保角度非负
+                                    # if angle < 0:
+                                    #     angle = 0.0
+                                    
+                                    # 获取distance值，如果不存在则为0
                                     distance = as5047_data.get('distance', 0.0)
                                     
                                     # 更新当前数据
@@ -193,11 +227,16 @@ class GripperController:
                                     # 调用回调函数
                                     if self.data_callback:
                                         self.data_callback(angle, distance, self.last_data_time)
-                        except json.JSONDecodeError:
-                            # JSON解析错误，忽略
-                            pass
+                                    
+                                    # 打印调试信息
+                                    # print(f"接收到夹爪数据: 角度={angle:.4f}, 距离={distance:.4f}")
+                        except json.JSONDecodeError as e:
+                            print(f"JSON解析错误: {e}, 数据: {json_str}")
                         except Exception as e:
                             print(f"数据处理错误: {e}")
+                        
+                        # 继续查找下一个JSON对象
+                        start_idx, end_idx = self._find_json(buffer)
                 
                 # 短暂休眠，避免CPU占用过高
                 time.sleep(0.01)
