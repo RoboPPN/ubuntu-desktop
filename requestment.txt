@@ -1,0 +1,4 @@
+opencv-python
+pyrealsense2
+pyserial
+PyQt5==5.12.0
