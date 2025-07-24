@@ -185,8 +185,8 @@ class GripperController:
                     buffer += data
                     
                     # 防止缓冲区过大
-                    if len(buffer) > 5000:
-                        buffer = buffer[-5000:]
+                    if len(buffer) > 2000:
+                        buffer = ""
                     
                     # 查找完整的JSON对象
                     start_idx, end_idx = self._find_json(buffer)
@@ -194,7 +194,9 @@ class GripperController:
                         # 提取JSON字符串
                         json_str = buffer[start_idx:end_idx+1]
                         buffer = buffer[end_idx+1:]
-                                            
+                        
+                        json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)   
+                             
                         try:
                             # 解析JSON数据
                             data_obj = json.loads(json_str)
