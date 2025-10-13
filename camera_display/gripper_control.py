@@ -35,6 +35,7 @@ class GripperController:
         self.current_angle = 0.0
         self.current_distance = 0.0
         self.last_data_time = 0
+        self.firmware_version = "未查询到固件版本号"
     
     def connect(self, port, baudrate=460800):
         """连接到指定串口"""
@@ -76,7 +77,7 @@ class GripperController:
         
         try:
             # 构建使能命令
-            cmd = struct.pack('<cf2s', bytes([SendFlag.ENABLE]), 0.0, b'\r\n')
+            cmd = struct.pack("<cf2s", bytes([SendFlag.ENABLE]), 0.0, b'\r\n')
             self.serial.write(cmd)
             self.enabled = True
             return True
@@ -91,7 +92,7 @@ class GripperController:
         
         try:
             # 构建禁用命令
-            cmd = struct.pack('<cf2s', bytes([SendFlag.DISABLE]), 0.0, b'\r\n')
+            cmd = struct.pack("<cf2s", bytes([SendFlag.DISABLE]), 0.0, b'\r\n')
             self.serial.write(cmd)
             self.enabled = False
             return True
@@ -113,7 +114,7 @@ class GripperController:
         
         try:
             # 构建位置控制命令
-            cmd = struct.pack('<cf2s', bytes([SendFlag.POSITION_CTRL]), angle, b'\r\n')
+            cmd = struct.pack("<cf2s", bytes([SendFlag.POSITION_CTRL]), angle, b'\r\n')
             self.serial.write(cmd)
             return True
         except Exception as e:
@@ -201,6 +202,11 @@ class GripperController:
                             # 解析JSON数据
                             data_obj = json.loads(json_str)
                             
+                            # 检查是否包含固件版本信息
+                            if 'Version' in data_obj:
+                                self.firmware_version = data_obj['Version']
+                                print(f"接收到固件版本号: {self.firmware_version}")
+
                             # 检查是否包含AS5047数据
                             if 'AS5047' in data_obj:
                                 as5047_data = data_obj['AS5047']
@@ -254,6 +260,28 @@ class GripperController:
         """
         return (self.current_angle, self.current_distance, self.last_data_time)
 
+    def get_device_info_command(self):
+        """
+        下发GET_INFO\r\n命令到设备
+        
+        返回:
+            bool: 发送是否成功
+        """
+        try:
+            # 构建GET_INFO命令数据
+            command = 'GET_INFO\r\n'
+            data = command.encode('utf-8')
+            # 每0.write()命令,循环5次
+            for _ in range(5):
+                print("正在发送GET_INFO命令...")
+                self.serial.write(data)
+                time.sleep(0.1)
+                    
+            # return self.serial.write(data)
+        except Exception as e:
+            print(f"发送GET_INFO命令失败: {e}")
+            # return False
+
 def list_serial_ports():
     """列出所有可用的串口设备"""
     ports = []
@@ -261,3 +289,4 @@ def list_serial_ports():
         if 'ttyUSB' in port.device:
             ports.append(port.device)
     return ports
+

@@ -209,6 +209,12 @@ class CameraDisplayApp(QMainWindow):
         gripper_layout.addWidget(position_label, 2, 0)
         gripper_layout.addWidget(self.position_slider, 2, 1, 1, 2)
         gripper_layout.addWidget(self.position_value_label, 2, 3)
+
+        # 固件版本显示
+        self.gripper_version_label = QLabel("Gripper固件版本: 未查询到")
+        self.gripper_version_label.setStyleSheet("font-size: 15px; color: gray;")
+        gripper_layout.addWidget(self.gripper_version_label, 3, 0, 1, 4)
+
         
         # 创建夹爪数据显示区域
         sense_group = QGroupBox("Sense夹爪开合数据")
@@ -253,6 +259,12 @@ class CameraDisplayApp(QMainWindow):
         sense_layout.addWidget(angle_label, 1, 0)
         sense_layout.addWidget(self.angle_display, 1, 1, 1, 3)
         sense_layout.addWidget(self.data_status_label, 2, 0, 1, 4)
+
+        # Sense夹爪固件版本显示
+        self.sense_gripper_version_label = QLabel("Sense固件版本: 未查询到")
+        self.sense_gripper_version_label.setStyleSheet("font-size: 15px; color: gray;")
+        sense_layout.addWidget(self.sense_gripper_version_label, 3, 0, 1, 4)
+
         
         # 创建摄像头控制按钮区域
         button_layout = QHBoxLayout()
@@ -338,11 +350,17 @@ class CameraDisplayApp(QMainWindow):
             port = self.port_combo.currentText()
             if port and port != "未检测到设备":
                 if self.gripper.connect(port):
-                    self.connect_button.setText("断开")
-                    self.enable_button.setEnabled(True)
-                    self.port_combo.setEnabled(False)
-                    self.refresh_button.setEnabled(False)
-                    QMessageBox.information(self, "连接成功", f"成功连接到串口设备: {port}")
+                    if self.gripper.start_data_reception(self.on_gripper_data_received):
+                        self.connect_button.setText("断开")
+                        self.enable_button.setEnabled(True)
+                        self.port_combo.setEnabled(False)
+                        self.refresh_button.setEnabled(False)
+                        self.gripper.get_device_info_command()
+                        self.gripper_version_label.setText(f"Gripper固件版本: {self.gripper.firmware_version}")
+                        QMessageBox.information(self, "连接成功", f"成功连接到串口设备: {port}")
+                    else:
+                        self.sense_gripper.disconnect()
+                        QMessageBox.warning(self, "数据接收失败", "无法启动数据接收")
                 else:
                     QMessageBox.warning(self, "连接失败", f"无法连接到串口设备: {port}")
     
@@ -383,6 +401,8 @@ class CameraDisplayApp(QMainWindow):
                         self.sense_data_receiving = True
                         self.data_status_label.setText("数据状态: 已连接")
                         self.data_status_label.setStyleSheet("color: green;")
+                        self.sense_gripper.get_device_info_command()
+                        self.sense_gripper_version_label.setText(f"Sense固件版本: {self.sense_gripper.firmware_version}")
                         QMessageBox.information(self, "连接成功", f"成功连接到串口设备: {port}")
                     else:
                         self.sense_gripper.disconnect()
@@ -414,6 +434,8 @@ class CameraDisplayApp(QMainWindow):
         
         # 更新显示
         self.angle_display.setText(f"{angle:.4f}")
+        # self.gripper_version_label.setText(f"固件版本: {self.gripper.firmware_version}")
+        # self.sense_gripper_version_label.setText(f"固件版本: {self.sense_gripper.firmware_version}")
         
         # 根据角度值设置颜色
         if angle < 1.68 or angle > 1.75:
