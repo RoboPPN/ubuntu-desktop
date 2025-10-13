@@ -22,6 +22,8 @@ class SendFlag:
     EFFORT_CTRL = 20
     VELOCITY_CTRL = 21
     POSITION_CTRL = 22
+    LIGHT_CTRL = 50
+    VIBRATE_CTRL = 51
 
 class GripperController:
     def __init__(self, port=None, baudrate=460800):
@@ -120,6 +122,49 @@ class GripperController:
         except Exception as e:
             print(f"设置夹爪位置失败: {e}")
             return False
+    
+    def set_light(self, light_id):
+        """设置夹爪灯光
+        
+        参数:
+            light_id (int): 灯光ID，0-白色，1-红色，2-绿色，3-蓝色，4-黄色
+        """
+        if not self.is_connected():
+            return False
+        
+        try:
+            data = bytearray()
+            data.append(SendFlag.LIGHT_CTRL)
+            data.extend(struct.pack(">i", light_id))
+            data.extend(b'\r\n')
+            # 构建灯光控制命令
+            return self.serial.write(data)
+        
+        except Exception as e:
+            print(f"设置夹爪灯光失败: {e}")
+            return False
+    
+    def vibrate_control(self, mode):
+        """
+        设置夹爪震动控制
+        mode: 0-关闭，1-开启
+        """
+        if not self.is_connected():
+            return False
+        
+        try:
+            print(f"设置夹爪震动模式: {mode}")
+            data = bytearray()
+            data.append(SendFlag.VIBRATE_CTRL)
+            data.extend(struct.pack(">i", mode))
+            data.extend(b'\r\n')
+            # 发送数据
+            return self.serial.write(data)
+        
+        except Exception as e:
+            print(f"设置夹爪震动失败: {e}")
+            return False
+        
     
     def start_data_reception(self, callback=None):
         """开始接收数据

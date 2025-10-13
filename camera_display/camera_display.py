@@ -404,12 +404,37 @@ class CameraDisplayApp(QMainWindow):
                         self.sense_gripper.get_device_info_command()
                         self.sense_gripper_version_label.setText(f"Sense固件版本: {self.sense_gripper.firmware_version}")
                         QMessageBox.information(self, "连接成功", f"成功连接到串口设备: {port}")
+                        self.vibrate_and_set_light()
                     else:
                         self.sense_gripper.disconnect()
                         QMessageBox.warning(self, "数据接收失败", "无法启动数据接收")
                 else:
                     QMessageBox.warning(self, "连接失败", f"无法连接到串口设备: {port}")
     
+    def vibrate_and_set_light(self):
+        print("正在执行亮灯操作...")
+        print("白灯亮1秒...")
+        self.sense_gripper.set_light(0)
+        time.sleep(1)
+        print("红灯亮1秒...")
+        self.sense_gripper.set_light(1)
+        time.sleep(1)
+        print("绿灯亮1秒...")
+        self.sense_gripper.set_light(2)
+        time.sleep(1)
+        print("蓝灯亮1秒...")
+        self.sense_gripper.set_light(3)
+        time.sleep(1)
+        print("黄灯亮1秒...")
+        self.sense_gripper.set_light(4)
+        time.sleep(1)
+        print("正在执行振动马达操作...")
+        print("振动2秒...")
+        self.sense_gripper.vibrate_control(1)
+        time.sleep(2)
+        print("关闭振动马达...")
+        self.sense_gripper.vibrate_control(0)
+        
     def on_gripper_data_received(self, angle, distance, timestamp):
         """夹爪数据接收回调函数"""
         # 数据接收回调，由数据接收线程调用
