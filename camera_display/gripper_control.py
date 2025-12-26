@@ -38,6 +38,7 @@ class GripperController:
         self.current_distance = 0.0
         self.last_data_time = 0
         self.firmware_version = "未查询到固件版本号"
+        self.sn_code = "未查询到SN码"
     
     def connect(self, port, baudrate=460800):
         """连接到指定串口"""
@@ -252,6 +253,11 @@ class GripperController:
                                 self.firmware_version = data_obj['Version']
                                 print(f"接收到固件版本号: {self.firmware_version}")
 
+                            # 检查并更新 SN 码
+                            if 'SN' in data_obj:
+                                self.sn_code = data_obj['SN']
+                                print(f"接收到夹爪SN码: {self.sn_code}")
+                                
                             # 检查是否包含AS5047数据
                             if 'AS5047' in data_obj:
                                 as5047_data = data_obj['AS5047']
@@ -326,6 +332,45 @@ class GripperController:
         except Exception as e:
             print(f"发送GET_INFO命令失败: {e}")
             # return False
+
+    def set_sn_code_command(self, sn_code):
+        """
+        下发SET_SN=<SN码>\r\n命令到设备
+        
+        参数:
+            sn_code (str): 要设置的SN码
+        
+        返回:
+            bool: 发送是否成功
+        """
+        # try:
+        #     # 构建SET_SN命令数据
+        #     command = f"SET_SN={sn_code}\r\n"
+        #     data = command.encode('utf-8')
+        #     # 每0.write()命令,循环5次
+        #     for _ in range(5):
+        #         print(f"正在发送SET_SN命令: {command.strip()}")
+        #         self.serial.write(data)
+        #         time.sleep(0.1)
+                    
+        #     # return self.serial.write(data)
+        # except Exception as e:
+        #     print(f"发送SET_SN命令失败: {e}")
+        #     # return False
+
+        if not self.is_connected():
+            return False
+        try:
+            command = f'SET_SN={sn_code}\r\n'
+            data = command.encode('utf-8')
+            # 写入串口
+            self.serial.write(data)
+            print(f"正在写入SN码: {command.strip()}")
+            return True
+        except Exception as e:
+            print(f"发送SN码失败: {e}")
+            return False
+        
 
 def list_serial_ports():
     """列出所有可用的串口设备"""

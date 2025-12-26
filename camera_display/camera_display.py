@@ -215,6 +215,19 @@ class CameraDisplayApp(QMainWindow):
         self.gripper_version_label.setStyleSheet("font-size: 15px; color: gray;")
         gripper_layout.addWidget(self.gripper_version_label, 3, 0, 1, 4)
 
+        # Gripper SN码输入行
+        self.gripper_sn_info = QLabel("Gripper SN码: 未查询到")
+        self.gripper_sn_info.setStyleSheet("font-size: 15px; color: gray;")
+        gripper_layout.addWidget(self.gripper_sn_info, 4, 0, 1, 4)
+        
+        self.gripper_sn_input = QLineEdit()
+        self.gripper_sn_input.setPlaceholderText("请输入Gripper SN码")
+        self.gripper_sn_btn = QPushButton("写入SN")
+        self.gripper_sn_btn.clicked.connect(self.write_gripper_sn)
+        # gripper_layout.addWidget(QLabel("SN码:"), 4, 0)
+        gripper_layout.addWidget(self.gripper_sn_input, 4, 1, 1, 2)
+        gripper_layout.addWidget(self.gripper_sn_btn, 4, 3)
+
         
         # 创建夹爪数据显示区域
         sense_group = QGroupBox("Sense夹爪开合数据")
@@ -265,7 +278,19 @@ class CameraDisplayApp(QMainWindow):
         self.sense_gripper_version_label.setStyleSheet("font-size: 15px; color: gray;")
         sense_layout.addWidget(self.sense_gripper_version_label, 3, 0, 1, 4)
 
+        # Sense SN码输入行
+        self.sense_sn_info = QLabel("Sense SN码: 未查询到")
+        self.sense_sn_info.setStyleSheet("font-size: 15px; color: gray;")
+        sense_layout.addWidget(self.sense_sn_info, 4, 0, 1, 4)
         
+        self.sense_sn_input = QLineEdit()
+        self.sense_sn_input.setPlaceholderText("请输入Sense SN码")
+        self.sense_sn_btn = QPushButton("写入SN")
+        self.sense_sn_btn.clicked.connect(self.write_sense_sn)
+        # sense_layout.addWidget(QLabel("SN码:"), 4, 0)
+        sense_layout.addWidget(self.sense_sn_input, 4, 1, 1, 2)
+        sense_layout.addWidget(self.sense_sn_btn, 4, 3)
+
         # 创建摄像头控制按钮区域
         button_layout = QHBoxLayout()
         self.open_camera_button = QPushButton("打开摄像头")
@@ -357,6 +382,7 @@ class CameraDisplayApp(QMainWindow):
                         self.refresh_button.setEnabled(False)
                         self.gripper.get_device_info_command()
                         self.gripper_version_label.setText(f"Gripper固件版本: {self.gripper.firmware_version}")
+                        self.gripper_sn_info.setText(f"Gripper SN码: {self.gripper.sn_code}")
                         QMessageBox.information(self, "连接成功", f"成功连接到串口设备: {port}")
                     else:
                         self.sense_gripper.disconnect()
@@ -403,6 +429,7 @@ class CameraDisplayApp(QMainWindow):
                         self.data_status_label.setStyleSheet("color: green;")
                         self.sense_gripper.get_device_info_command()
                         self.sense_gripper_version_label.setText(f"Sense固件版本: {self.sense_gripper.firmware_version}")
+                        self.sense_sn_info.setText(f"Sense SN码: {self.sense_gripper.sn_code}")
                         QMessageBox.information(self, "连接成功", f"成功连接到串口设备: {port}")
                         self.vibrate_and_set_light()
                     else:
@@ -411,6 +438,29 @@ class CameraDisplayApp(QMainWindow):
                 else:
                     QMessageBox.warning(self, "连接失败", f"无法连接到串口设备: {port}")
     
+    def write_gripper_sn(self):
+        """写入 Gripper 的 SN 码"""
+        sn = self.gripper_sn_input.text().strip()
+        if not sn:
+            QMessageBox.warning(self, "警告", "请输入有效的SN码")
+            return
+        if self.gripper.set_sn_code_command(sn):
+            QMessageBox.information(self, "成功", f"Gripper SN码 '{sn}' 已发送写入指令")
+        else:
+            QMessageBox.warning(self, "错误", "写入失败，请检查串口连接")
+
+    def write_sense_sn(self):
+        """写入 Sense 的 SN 码"""
+        sn = self.sense_sn_input.text().strip()
+        if not sn:
+            QMessageBox.warning(self, "警告", "请输入有效的SN码")
+            return
+        if self.sense_gripper.set_sn_code_command(sn):
+            time.sleep(0.5)
+            QMessageBox.information(self, "成功", f"Sense SN码 '{sn}' 已发送写入指令")
+        else:
+            QMessageBox.warning(self, "错误", "写入失败，请检查串口连接")
+            
     def vibrate_and_set_light(self):
         print("正在执行亮灯操作...")
         print("白灯亮1秒...")
