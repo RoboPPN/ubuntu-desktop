@@ -326,7 +326,7 @@ class GripperController:
             for _ in range(5):
                 print("正在发送GET_INFO命令...")
                 self.serial.write(data)
-                time.sleep(0.1)
+                time.sleep(0.2)
                     
             # return self.serial.write(data)
         except Exception as e:
