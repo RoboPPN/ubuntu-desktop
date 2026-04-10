@@ -30,7 +30,7 @@ class CameraDisplayApp(QMainWindow):
         super().__init__()
         
         # 设置窗口标题和大小
-        self.setWindowTitle("pika 测试软件")
+        self.setWindowTitle("pika 质检软件")
         self.setMinimumSize(1920, 900)  # 增加高度以容纳夹爪控制和数据显示区域
         
         # 初始化变量
@@ -103,7 +103,7 @@ class CameraDisplayApp(QMainWindow):
         usb_frame.setFrameShape(QFrame.Box)
         usb_frame.setLineWidth(2)
         usb_layout = QVBoxLayout(usb_frame)
-        usb_title = QLabel("USB摄像头 (彩色)")
+        usb_title = QLabel("鱼眼图像")
         usb_title.setAlignment(Qt.AlignCenter)
         usb_title.setStyleSheet("font-weight: bold; font-size: 14px;")
         self.usb_label = QLabel()
@@ -117,7 +117,7 @@ class CameraDisplayApp(QMainWindow):
         rs_color_frame.setFrameShape(QFrame.Box)
         rs_color_frame.setLineWidth(2)
         rs_color_layout = QVBoxLayout(rs_color_frame)
-        rs_color_title = QLabel("RealSense D405 (彩色)")
+        rs_color_title = QLabel("RGB 图像")
         rs_color_title.setAlignment(Qt.AlignCenter)
         rs_color_title.setStyleSheet("font-weight: bold; font-size: 14px;")
         self.rs_color_label = QLabel()
@@ -131,7 +131,7 @@ class CameraDisplayApp(QMainWindow):
         rs_depth_frame.setFrameShape(QFrame.Box)
         rs_depth_frame.setLineWidth(2)
         rs_depth_layout = QVBoxLayout(rs_depth_frame)
-        rs_depth_title = QLabel("RealSense D405 (深度)")
+        rs_depth_title = QLabel("深度图像")
         rs_depth_title.setAlignment(Qt.AlignCenter)
         rs_depth_title.setStyleSheet("font-weight: bold; font-size: 14px;")
         self.rs_depth_label = QLabel()
