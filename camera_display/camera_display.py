@@ -664,16 +664,39 @@ class CameraDisplayApp(QMainWindow):
         
         while usb_cam_index < 10:  # 尝试多个索引以找到外接USB摄像头
             try:
-                temp_cam = cv2.VideoCapture(usb_cam_index)
+                # 必须指定 V4L2。CAP_ANY 在打不开 /dev/videoN 时会落到 FFMPEG，
+                # FFMPEG 的 index 与 /dev/videoN 不是同一套编号，set(MJPG/分辨率) 会被忽略。
+                temp_cam = cv2.VideoCapture(usb_cam_index, cv2.CAP_V4L2)
                 if temp_cam.isOpened():
-                    ret, frame = temp_cam.read()
-                    if ret:
-                        self.usb_cam = temp_cam
-                        self.usb_cam_available = True
-                        print(f"外接USB摄像头已找到，索引: {usb_cam_index}")
-                        break
-                    else:
+                    name_path = f'/sys/class/video4linux/video{usb_cam_index}/name'
+                    cam_name = ''
+                    try:
+                        with open(name_path) as f:
+                            cam_name = f.read().strip()
+                    except Exception:
+                        pass
+                    # 跳过笔记本内置摄像头和 RealSense 的 UVC 节点
+                    skip_keys = ('integrated', 'realsense', 'depth ca')
+                    if any(k in cam_name.lower() for k in skip_keys):
+                        print(f'跳过索引 {usb_cam_index}: {cam_name}')
                         temp_cam.release()
+                    else:
+                        temp_cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+                        temp_cam.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                        temp_cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+                        temp_cam.set(cv2.CAP_PROP_FPS, 30)
+                        ret, frame = temp_cam.read()
+                        actual_h, actual_w = (frame.shape[0], frame.shape[1]) if ret and frame is not None else (0, 0)
+                        fourcc = int(temp_cam.get(cv2.CAP_PROP_FOURCC))
+                        fourcc_str = ''.join([chr((fourcc >> 8 * i) & 0xFF) for i in range(4)])
+                        if ret and actual_w == 640 and actual_h == 480:
+                            self.usb_cam = temp_cam
+                            self.usb_cam_available = True
+                            print(f'外接USB摄像头已找到，索引: {usb_cam_index}，设备: {cam_name}，格式: {fourcc_str}，分辨率: {actual_w}x{actual_h}')
+                            break
+                        else:
+                            print(f'索引 {usb_cam_index} ({cam_name}) 未按 MJPG 640x480 打开，实际 {fourcc_str} {actual_w}x{actual_h}，跳过')
+                            temp_cam.release()
                 else:
                     temp_cam.release()
             except Exception as e:
