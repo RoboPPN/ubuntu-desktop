@@ -10,12 +10,27 @@ Qt摄像头显示程序
 包含Sense夹爪开合数据显示功能
 """
 
+import os
 import sys
 import cv2
+
+# opencv-python 会把 Qt 插件路径指到自带的 cv2/qt/plugins，与系统 PyQt5 不兼容。
+# 仅 Ubuntu 22.04 需要清掉该路径；20.04 不处理。
+_os_release = {}
+try:
+    with open("/etc/os-release", encoding="utf-8") as _f:
+        for _line in _f:
+            if "=" in _line and not _line.startswith("#"):
+                _k, _v = _line.strip().split("=", 1)
+                _os_release[_k] = _v.strip('"')
+except OSError:
+    pass
+if _os_release.get("ID", "").lower() == "ubuntu" and _os_release.get("VERSION_ID") == "22.04":
+    os.environ.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
+
 import numpy as np
 import pyrealsense2 as rs
 import time
-import os
 import json
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap, QFont
